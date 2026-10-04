@@ -5,9 +5,9 @@ The React Native and Expo helper for [FIXME](https://getfixme.dev), the Mac app 
 your coding agent on the Mac (Claude Code, Codex, Cursor and others) gets the exact file and line, a
 screenshot, the UI tree, console, network requests and a short clip.
 
-It runs only in development. On iOS a development build gets FIXME's own native overlay, the same one FIXME gives a
-Swift app, with your React components named in the ticket; in Expo Go (and on Android for now) a JavaScript overlay
-does the same job. In production builds every export is a no-op and the native part is not linked at all.
+It runs only in development, and the overlay is FIXME's own native one, the same you get in a Swift or Kotlin app, with your
+React components named in the ticket. That needs a development build: Expo Go cannot load native code, so there it does nothing
+and says so in one line. In production builds every export is a no-op and the native part is not linked at all.
 
 ## Install
 
@@ -30,11 +30,10 @@ when that worked it changes your app. Your `package.json` then names the release
 same file, and your lockfile records its checksum:
 
 ```json
-"devDependencies": { "fixme-react-native": "https://github.com/fixme-dev/fixme-react-native/releases/download/0.1.2/fixme-react-native-0.1.2.tgz" }
+"devDependencies": { "fixme-react-native": "https://github.com/fixme-dev/fixme-react-native/releases/download/0.1.3/fixme-react-native-0.1.3.tgz" }
 ```
 
-After that, `npx fixme-react-native undo` removes everything `init` added (and `npx fixme-react-native init --optional` adds the
-recommended extras below). To add the dependency by hand, put that line in `package.json` and run your package manager's install,
+After that, `npx fixme-react-native undo` removes everything `init` added. To add the dependency by hand, put that line in `package.json` and run your package manager's install,
 then `npx fixme-react-native init`. (`npx expo install <url>` can't take a URL: install it with your package manager.)
 
 The one line it adds, as the first statement of your entry file:
@@ -47,14 +46,14 @@ For an Expo Router app (`"main": "expo-router/entry"`) it writes `index.js` that
 `expo-router/entry`, and points `"main"` at it (`undo` puts `"main"` back and removes the file); the root layout is
 evaluated too late to wrap the app.
 
-**Expo:** `init` also adds `"fixme-react-native"` to the plugins in `app.json` (an app with `app.config.js` adds it there by hand). Run `npx expo run:ios` (or build a
-development build with EAS) to get the native overlay. The plugin adds the Bonjour, Local Network and microphone texts
-iOS needs; pass `{ "voice": false }` to leave the microphone and speech texts out. For screenshots in a development
-build, also run `npx expo install react-native-view-shot`. Expo Go cannot load native code: it uses the JavaScript
-overlay, which already has screenshots.
+**Expo:** `init` also adds `"fixme-react-native"` to the plugins in `app.json` (an app with `app.config.js` adds it there by hand). Run
+`npx expo run:ios` or `run:android` (or build a development build with EAS) to get the overlay: it is native code, so a reload does
+not add it. The plugin adds the Bonjour, Local Network and microphone texts iOS needs; pass `{ "voice": false }` to leave the
+microphone and speech texts out. **Expo Go** cannot load native code: the helper prints `FIXME needs a development build: npx expo
+run:ios / run:android` and does nothing else.
 
-**Bare React Native:** `init` adds the same Info.plist texts and runs `pod install`. The native part is linked into the
-**Debug** configuration only, so a Release build contains no FIXME code.
+**Bare React Native:** `init` adds the same Info.plist texts and runs `pod install` (Android links by autolinking). The native part
+is linked into Debug builds only, so a Release build contains no FIXME code. Rebuild the app once afterwards.
 
 ## Using it
 
@@ -62,31 +61,23 @@ overlay, which already has screenshots.
    Wi-Fi (Android over USB works too).
 2. The first time, allow the phone on your Mac.
 3. Tap with three fingers, circle what's wrong, and send. Tap the mic to say what you see (tap it again to stop),
-   or tap Type; each circle keeps its own note. Shake, or say "FIXME, clip that", to send the last 30 seconds as a clip.
+   or tap Type; each circle keeps its own note. Clip last 30 s and Record are on the overlay too.
 
-## Optional extras
-
-Each is detected at runtime; without it the helper still works and says what you're missing. (On iOS in a development build the native overlay does the circling, the mic and the clips itself; these matter for the JavaScript overlay.)
-
-| Package | Adds |
-|---|---|
-| `react-native-view-shot` | screenshots, crops and clips |
-| `expo-speech-recognition` or `@react-native-voice/voice` | tap the mic to say what's wrong, and "FIXME, clip that" |
-| `expo-file-system` or `@react-native-async-storage/async-storage` | tickets kept while your Mac is away |
-| `expo-secure-store` or `react-native-keychain` | the pairing key kept in the Keychain |
-| `react-native-get-random-values` (bare apps; Expo apps already have a source) | pairing with your Mac from the JavaScript client (Android, Expo Go): Hermes has no secure random numbers of its own |
-| `react-native-safe-area-context` | the JavaScript overlay keeps clear of the keyboard and the system bars on Android |
-| `react-native-svg` | smoother ink |
-| `expo-haptics` or `react-native-haptic-feedback` | haptics |
+The helper's own part is small: when you send, the overlay asks "what do you know about these circles?" and this package answers
+with the React component, its file and line, the console, the screen and the UI tree. From code: `Pointer.capture()`,
+`Pointer.clip()`, `Pointer.toggleRecording()`, `Pointer.setScreen(name)`, `Pointer.setState(key, value)` and
+`Pointer.trackNavigation(navigationRef)` (types in `index.d.ts`). The dev menu has "mark this screen", "clip last 30s" and "start or
+stop recording".
 
 ## Requirements
 
-React Native 0.72 or later, or Expo SDK 47 or later. FIXME for Mac. The native overlay needs iOS 16 or later (an older
-iPhone uses the JavaScript overlay); it is linked into Debug builds only.
+React Native 0.72 or later, or Expo SDK 47 or later, in a development build. FIXME for Mac. The iOS overlay needs iOS 16 or
+later; the Android one API 24 or later. Both are linked into development builds only.
 
 ## Privacy
 
-The helper talks only to your own Mac, on your local network or through FIXME's end-to-end encrypted relay.
+The overlay talks only to your own Mac, on your local network or through FIXME's end-to-end encrypted relay. This package itself
+opens no connection: it only answers the overlay, and asks your own Metro server (`/symbolicate`) for file and line.
 Nothing goes to any other server.
 
 ## License
