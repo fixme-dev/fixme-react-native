@@ -30,7 +30,7 @@ when that worked it changes your app. Your `package.json` then names the release
 same file, and your lockfile records its checksum:
 
 ```json
-"devDependencies": { "fixme-react-native": "https://github.com/fixme-dev/fixme-react-native/releases/download/0.1.3/fixme-react-native-0.1.3.tgz" }
+"devDependencies": { "fixme-react-native": "https://github.com/fixme-dev/fixme-react-native/releases/download/0.1.4/fixme-react-native-0.1.4.tgz" }
 ```
 
 After that, `npx fixme-react-native undo` removes everything `init` added. To add the dependency by hand, put that line in `package.json` and run your package manager's install,
