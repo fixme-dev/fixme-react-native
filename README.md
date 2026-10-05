@@ -80,6 +80,11 @@ The overlay talks only to your own Mac, on your local network or through FIXME's
 opens no connection: it only answers the overlay, and asks your own Metro server (`/symbolicate`) for file and line.
 Nothing goes to any other server.
 
+## Bugs and ideas
+
+Found a bug, or have an idea? Open an issue at https://github.com/fixme-dev/fixme-issues. Issues there are public, so
+leave out file paths, phone names and anything private. In the FIXME app, Help, then Report a Bug, fills in your versions for you.
+
 ## License
 
 See [LICENSE](LICENSE). Free to use in development builds alongside FIXME.
